@@ -1,210 +1,35 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <meta charset="utf-8">
-  <title>Speaq Quiz - Loading...</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <style>
-    * { box-sizing: border-box; }
-    html, body { margin:0; padding:0; height:100%; overflow:hidden; font-family:Arial, sans-serif;}
-    #app-container { width:100%; height:100%; }
-    iframe { border:0; width:100%; height:100%; display:block; }
-
-    /* --- Shared Modal Styles --- */
-    .modal-overlay {
-      display: none;
-      position: fixed;
-      top:0; left:0; right:0; bottom:0;
-      background: rgba(0,0,0,0.6);
-      z-index: 9999;
-      align-items: center;
-      justify-content: center;
-    }
-    .modal-content {
-      background: white;
-      border-radius: 12px;
-      max-width: 400px;
-      width: 90%;
-      padding: 24px;
-      text-align: center;
-      box-shadow: 0 4px 16px rgba(0,0,0,0.2);
-    }
-    .modal-content h2 {
-      margin-top: 0;
-      font-size: 1.4rem;
-      color: #333;
-    }
-    .modal-content p {
-      font-size: 1rem;
-      color: #555;
-      margin: 16px 0;
-    }
-    .modal-content .actions button {
-      background: #0066cc;
-      border: none;
-      color: white;
-      padding: 10px 20px;
-      border-radius: 6px;
-      cursor: pointer;
-      font-size: 1rem;
-      margin: 8px 4px 0;
-    }
-    .modal-content .actions button:hover {
-      background: #005bb5;
-    }
-
-    /* Timeout Modal referral box */
-    #timeoutModal .ref-box {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      background: #f7f7f7;
-      border-radius: 6px;
-      padding: 8px 12px;
-      margin-bottom: 16px;
-      font-family: monospace;
-      font-size: 0.95rem;
-    }
-    #timeoutModal .ref-box button {
-      background: #4CAF50;
-      border: none;
-      color: white;
-      padding: 6px 10px;
-      border-radius: 4px;
-      cursor: pointer;
-      font-size: 0.9rem;
-    }
-  </style>
+    <meta charset="utf-8">
+    <title>PPM Monitoring System</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+    <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/phedppm/reportsystem/main/favicon.png">
+    
+    <style>
+        /* Basic styles to make the iframe fill the entire page */
+        html, body { 
+            margin: 0; 
+            padding: 0; 
+            height: 100%; 
+            overflow: hidden; 
+            font-family: Arial, sans-serif;
+        }
+        iframe { 
+            border: 0; 
+            width: 100%; 
+            height: 100%; 
+            display: block; 
+        }
+    </style>
 </head>
 <body>
-  <div id="app-container">
-    <p style="text-align:center; padding-top:50px;">Loading application...</p>
-  </div>
 
-  <!-- Timeout Modal -->
-  <div id="timeoutModal" class="modal-overlay">
-    <div class="modal-content">
-      <h2>Signup Timeout</h2>
-      <p>
-        Signup confirmation timed out.<br>
-        Please sign up at our main page using your referral email below. Visit Speaq Quiz at sites.google.com/view/speaqquiz henceforth.
-      </p>
-      <div class="ref-box">
-        <span id="referralCodeDisplay">—</span>
-        <button id="copyReferralBtn">Copy Ref. Email</button>
-      </div>
-      <div class="actions">
-        <button id="timeoutGoMainBtn">Go to SpeaqQuiz</button>
-      </div>
-    </div>
-  </div>
+    <iframe 
+        src="https://script.google.com/macros/s/AKfycbyOEQB1wi9v0oZqyRCPHCNqhTuvE4C8-QG53cAVIuuRmbsXMoREPDWqiNT8h37JyUk/exec" 
+        allow="geolocation">
+    </iframe>
 
-  <!-- Success Modal -->
-  <div id="successModal" class="modal-overlay">
-    <div class="modal-content">
-      <h2>Signup Confirmed!</h2>
-      <p>Your account is ready! Check your inbox for your 4‑digit PIN.<br>
-       Please bookmark our main page for subsequent visits:</p>
-
-        <p style="font-family: monospace; color: #0066cc; word-break: break-all;">
-        https://sites.google.com/view/speaqquiz
-      </p>
-      <div class="actions">
-        <button id="copyMainUrlBtn">Copy Main Page URL</button>
-        <button id="successGoMainBtn">Go to SpeaqQuiz Now</button>
-      </div>
-    </div>
-  </div>
-
-  <script>
-  (function() {
-    const container        = document.getElementById('app-container');
-    const appsScriptUrl    = "https://script.google.com/macros/s/AKfycbyOEQB1wi9v0oZqyRCPHCNqhTuvE4C8-QG53cAVIuuRmbsXMoREPDWqiNT8h37JyUk/exec";
-    const statusCheckerUrl = "https://script.google.com/macros/s/AKfycbylrN0x0nXGbBLU4vH0t3YRwnKC3kO0cQ2z2GUSb1k5N-V4bv3TbKOAPcslPAdY3gRr/exec";
-    const googleSiteUrl    = "https://sites.google.com/view/speaqquiz";
-
-    let pollingIntervalId  = null;
-    let pollingAttempts    = 0;
-    const maxPollingAttempts    = 60;    // 5 minutes
-    const pollingIntervalMillis = 5000;  // every 5s
-    const autoRedirectMillis    = 60000; // 10s after modal
-
-    const sessionId    = Date.now().toString(36) + Math.random().toString(36).substring(2);
-    const referralCode = new URLSearchParams(window.location.search).get("ref") || '';
-
-    // Embed iframe
-    let url = `${appsScriptUrl}?sessionId=${encodeURIComponent(sessionId)}`;
-    if (referralCode) url += `&ref=${encodeURIComponent(referralCode)}`;
-    container.innerHTML = `<iframe src="${url}"></iframe>`;
-
-    // Modal elements
-    const timeoutModal      = document.getElementById('timeoutModal');
-    const timeoutCopyBtn    = document.getElementById('copyReferralBtn');
-    const timeoutGoMainBtn  = document.getElementById('timeoutGoMainBtn');
-    const referralDisplay   = document.getElementById('referralCodeDisplay');
-
-    const successModal      = document.getElementById('successModal');
-    const copyMainUrlBtn    = document.getElementById('copyMainUrlBtn');
-    const successGoMainBtn  = document.getElementById('successGoMainBtn');
-
-    // Timeout modal setup
-    referralDisplay.textContent = referralCode || '—';
-    timeoutCopyBtn.addEventListener('click', () => {
-      navigator.clipboard.writeText(referralCode)
-        .then(() => timeoutCopyBtn.textContent = 'Copied!')
-        .catch(() => timeoutCopyBtn.textContent = 'Failed');
-    });
-    timeoutGoMainBtn.addEventListener('click', () => {
-      window.location.href = googleSiteUrl;
-    });
-
-    // Success modal setup
-    copyMainUrlBtn.addEventListener('click', () => {
-      navigator.clipboard.writeText(googleSiteUrl)
-        .then(() => copyMainUrlBtn.textContent = 'Copied!')
-        .catch(() => copyMainUrlBtn.textContent = 'Failed');
-    });
-    successGoMainBtn.addEventListener('click', () => {
-      window.location.href = googleSiteUrl;
-    });
-
-    // Helper to show modal + auto-redirect
-    function showModal(modal) {
-      modal.style.display = 'flex';
-      setTimeout(() => window.location.href = googleSiteUrl, autoRedirectMillis);
-    }
-
-    // Polling
-    function poll() {
-      pollingAttempts++;
-      console.log(`LAUNCHER: Poll #${pollingAttempts} for session ${sessionId}`);
-
-      if (pollingAttempts > maxPollingAttempts) {
-        console.warn(`LAUNCHER: Timeout after ${maxPollingAttempts} polls.`);
-        clearInterval(pollingIntervalId);
-        return showModal(timeoutModal);
-      }
-
-      fetch(`${statusCheckerUrl}?sessionId=${encodeURIComponent(sessionId)}`)
-        .then(r => r.json())
-        .then(data => {
-          console.log("LAUNCHER: Status response:", data);
-          if (data.status === 'success') {
-            console.log("LAUNCHER: Success—showing success modal");
-            clearInterval(pollingIntervalId);
-            showModal(successModal);
-          }
-        })
-        .catch(err => console.error("LAUNCHER: Poll error:", err));
-    }
-
-    // Start after a brief delay
-    setTimeout(() => {
-      pollingIntervalId = setInterval(poll, pollingIntervalMillis);
-      poll();
-    }, pollingIntervalMillis);
-
-  })();
-  </script>
 </body>
 </html>
