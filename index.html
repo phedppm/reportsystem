@@ -3,168 +3,34 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>PPM Monitoring System</title>
-
-  <!-- favicon (replace URL if you want another file) -->
-  <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/phedppm/reportsystem/main/favicon.png">
-
+  <title>PPM Monitoring System — Redirecting…</title>
+  <!-- Optional: favicon below — replace if you want -->
+  <link rel="icon" href="https://raw.githubusercontent.com/phedppm/reportsystem/main/favicon.png">
+  <meta name="robots" content="noindex">
   <style>
-    :root{
-      --accent:#0b74de;
-      --bg:#0f1720;
-      --card:#0b1220cc;
-      --text:#eef2f7;
-    }
-    html,body{height:100%;margin:0;background:linear-gradient(180deg,#071024 0%, #0b1726 100%);color:var(--text);font-family:Inter, system-ui, Arial;}
-    .app{
-      height:100vh;display:flex;flex-direction:column;
-    }
-    header{
-      height:56px;padding:8px 14px;display:flex;align-items:center;gap:12px;
-      background:linear-gradient(90deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
-      box-shadow:0 1px 0 rgba(255,255,255,0.02) inset;
-      z-index:3;
-    }
-    header .title{font-weight:600;font-size:16px;}
-    header .actions{margin-left:auto;display:flex;gap:8px;}
-    .btn{
-      background:transparent;border:1px solid rgba(255,255,255,0.06);padding:8px 12px;border-radius:8px;color:var(--text);cursor:pointer;font-weight:600;
-    }
-    .btn.primary{background:var(--accent);border-color:transparent;}
-    main{flex:1;position:relative;display:block;}
-    iframe{width:100%;height:100%;border:0;display:block; background: white;}
-    /* overlay shown if iframe is blocked or user needs instructions */
-    .overlay{
-      position:absolute;inset:16px;border-radius:12px;background:linear-gradient(180deg, rgba(6,10,18,0.75), rgba(6,10,18,0.85));
-      display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:20px;text-align:center;
-      color:var(--text);backdrop-filter: blur(4px);
-    }
-    .overlay h2{margin:0;font-size:20px;}
-    .overlay p{margin:0;opacity:0.9;max-width:720px;}
-    .spinner{width:48px;height:48px;border-radius:50%;border:4px solid rgba(255,255,255,0.06);border-top-color:var(--accent);animation:spin 1s linear infinite}
-    @keyframes spin{to{transform:rotate(360deg)}}
-    .hidden{display:none}
-    footer{height:36px;padding:6px 12px;font-size:12px;opacity:0.85;background:transparent;display:flex;align-items:center;gap:12px}
-    a.link{color:var(--accent);text-decoration:none}
+    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;background:#071022;color:#fff}
+    a { color:#7bd389; text-decoration:none; font-weight:600 }
   </style>
 </head>
 <body>
-  <div class="app">
-    <header>
-      <div class="logo"><img src="https://raw.githubusercontent.com/phedppm/reportsystem/main/favicon.png" alt="" width="28" style="vertical-align:middle;border-radius:6px"></div>
-      <div class="title">PPM Monitoring System</div>
-
-      <div class="actions">
-        <button id="openFullBtn" class="btn primary" title="Open web app in a new tab">Open full page</button>
-        <button id="reloadBtn" class="btn" title="Reload embed">Reload</button>
-      </div>
-    </header>
-
-    <main>
-      <!-- Replace the src below with your web app URL -->
-      <iframe id="appFrame"
-              src="https://script.google.com/macros/s/AKfycbyOEQB1wi9v0oZqyRCPHCNqhTuvE4C8-QG53cAVIuuRmbsXMoREPDWqiNT8h37JyUk/exec"
-              allow="geolocation; microphone; camera; clipboard-read; clipboard-write"
-              title="PPM Monitoring Web App"></iframe>
-
-      <!-- overlay / fallback UI -->
-      <div id="overlay" class="overlay">
-        <div class="spinner" id="spinner"></div>
-        <h2 id="overlayTitle">Loading PPM Monitoring App…</h2>
-        <p id="overlayText">We are attempting to load the embedded app. If location or full features are blocked inside this site, please open the app in a new tab using the button below.</p>
-        <div style="display:flex;gap:10px;margin-top:8px">
-          <button id="overlayOpen" class="btn primary">Open full page</button>
-          <button id="overlayDismiss" class="btn">Continue to try embed</button>
-        </div>
-        <p style="margin-top:12px;font-size:12px;opacity:0.8">If you see a browser message like “Permissions policy violation” or “refused to connect”, that means the webapp host prevents framing — open the full page instead.</p>
-      </div>
-    </main>
-
-    <footer>
-      <div>Hosted wrapper — use this page URL to embed in Google Sites or share directly.</div>
-      <div style="margin-left:auto">Need help? <a class="link" href="#" id="helpLink">Docs</a></div>
-    </footer>
+  <div>
+    <div style="text-align:center;margin-bottom:18px">Opening PPM Monitoring System…</div>
+    <div style="text-align:center;font-size:14px">
+      If nothing happens automatically, <a id="open" href="https://script.google.com/macros/s/AKfycbyOEQB1wi9v0oZqyRCPHCNqhTuvE4C8-QG53cAVIuuRmbsXMoREPDWqiNT8h37JyUk/exec" target="_blank" rel="noopener">click here</a>.
+    </div>
   </div>
 
-<script>
-  const webAppUrl = document.getElementById('appFrame').src;
-  const frame = document.getElementById('appFrame');
-  const overlay = document.getElementById('overlay');
-  const spinner = document.getElementById('spinner');
-  const openFullBtn = document.getElementById('openFullBtn');
-  const overlayOpen = document.getElementById('overlayOpen');
-  const overlayDismiss = document.getElementById('overlayDismiss');
-  const reloadBtn = document.getElementById('reloadBtn');
-
-  // open the web app top-level:
-  function openFull(){ window.open(webAppUrl, '_blank'); }
-  openFullBtn.addEventListener('click', openFull);
-  overlayOpen.addEventListener('click', openFull);
-
-  // reload the iframe
-  reloadBtn.addEventListener('click', ()=> {
-    try { frame.src = webAppUrl + (webAppUrl.includes('?') ? '&r=' : '?r=') + Date.now(); }
-    catch(e){ frame.src = webAppUrl; }
-  });
-
-  // If user dismisses the overlay, hide it but keep trying to load
-  overlayDismiss.addEventListener('click', ()=> overlay.classList.add('hidden'));
-
-  // Handshake protocol:
-  // If the embedded app posts a message {type:'app-ready'} we will hide overlay.
-  // Add this code inside your Apps Script HTML (below) to post the message when ready:
-  //
-  // <script>
-  //   window.parent.postMessage({type:'app-ready'}, '*');
-  // </script>
-  //
-  // The wrapper will listen for that to confirm the app loaded and is cooperative.
-  window.addEventListener('message', (ev)=>{
+  <script>
+    // Replace URL below if needed
+    const url = "https://script.google.com/macros/s/AKfycbyOEQB1wi9v0oZqyRCPHCNqhTuvE4C8-QG53cAVIuuRmbsXMoREPDWqiNT8h37JyUk/exec";
+    // Best effort immediate redirect (top-level)
     try {
-      const d = ev.data || {};
-      if(d && d.type === 'app-ready'){
-        overlay.classList.add('hidden');
-      }
-    } catch(e){}
-  }, false);
-
-  // If no handshake occurs within X ms, assume blocked & show persistent overlay (with open button).
-  const HANDSHAKE_TIMEOUT = 3500; // ms
-  let handshakeDone = false;
-
-  // When iframe fires load — it's not a guarantee of proper load (cross-origin), but it's a hint
-  frame.addEventListener('load', ()=>{
-    // give the embedded app a little time to send the 'app-ready' postMessage
-    setTimeout(()=>{
-      if(!handshakeDone){
-        // keep overlay visible with instructions (some hosts block framing)
-        overlay.classList.remove('hidden');
-        spinner.style.display = 'none';
-        document.getElementById('overlayTitle').textContent = 'Embedded page loaded but not responding';
-        document.getElementById('overlayText').textContent = 'The embedded app did not respond to the wrapper. This usually means the host prevents embedding or the app did not include a handshake. Click "Open full page" to open the app top-level (full features & geolocation will work there).';
-      }
-    }, HANDSHAKE_TIMEOUT);
-  });
-
-  // If we receive handshake, set flag and hide overlay
-  window.addEventListener('message',(ev)=>{
-    const d = ev.data || {};
-    if(d && d.type === 'app-ready'){
-      handshakeDone = true;
-      spinner.style.display='none';
-      overlay.classList.add('hidden');
+      // Use replace so history isn't cluttered
+      window.location.replace(url);
+    } catch(e){
+      // fallback: open in new tab
+      window.open(url, "_blank", "noopener");
     }
-  });
-
-  // As a fallback after a longer timeout, show explicit overlay
-  setTimeout(()=>{
-    if(!handshakeDone){
-      spinner.style.display='none';
-      overlay.classList.remove('hidden');
-      document.getElementById('overlayTitle').textContent = 'Unable to fully embed app';
-    }
-  }, 7000);
-</script>
-
+  </script>
 </body>
 </html>
