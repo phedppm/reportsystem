@@ -1,36 +1,76 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>PPM Monitoring System — Redirecting…</title>
-  <!-- Optional: favicon below — replace if you want -->
-  <link rel="icon" href="https://raw.githubusercontent.com/phedppm/reportsystem/main/favicon.png">
-  <meta name="robots" content="noindex">
-  <style>
-    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;background:#071022;color:#fff}
-    a { color:#7bd389; text-decoration:none; font-weight:600 }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PPM Monitoring System</title>
+    
+    <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/phedppm/reportsystem/main/favicon.png">
+    
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e8eaec 100%);
+        }
+        .container {
+            padding: 40px;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+            max-width: 500px;
+            margin: 20px;
+        }
+        h1 {
+            color: #333;
+            margin-top: 0;
+            font-weight: 600;
+        }
+        p {
+            color: #666;
+            margin-bottom: 30px;
+        }
+        .launch-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background-color: #0056b3;
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 18px;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+        .launch-button:hover {
+            background-color: #003d80;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0, 86, 179, 0.3);
+        }
+    </style>
 </head>
 <body>
-  <div>
-    <div style="text-align:center;margin-bottom:18px">Opening PPM Monitoring System…</div>
-    <div style="text-align:center;font-size:14px">
-      If nothing happens automatically, <a id="open" href="https://script.google.com/macros/s/AKfycbyOEQB1wi9v0oZqyRCPHCNqhTuvE4C8-QG53cAVIuuRmbsXMoREPDWqiNT8h37JyUk/exec" target="_blank" rel="noopener">click here</a>.
-    </div>
-  </div>
 
-  <script>
-    // Replace URL below if needed
-    const url = "https://script.google.com/macros/s/AKfycbyOEQB1wi9v0oZqyRCPHCNqhTuvE4C8-QG53cAVIuuRmbsXMoREPDWqiNT8h37JyUk/exec";
-    // Best effort immediate redirect (top-level)
-    try {
-      // Use replace so history isn't cluttered
-      window.location.replace(url);
-    } catch(e){
-      // fallback: open in new tab
-      window.open(url, "_blank", "noopener");
-    }
-  </script>
+    <div class="container">
+        <h1>PPM Monitoring System</h1>
+        <p>Click the button below to launch the secure application.</p>
+        
+        <a href="https://script.google.com/macros/s/AKfycbyOEQB1wi9v0oZqyRCPHCNqhTuvE4C8-QG53cAVIuuRmbsXMoREPDWqiNT8h37JyUk/exec" 
+           class="launch-button" 
+           target="_blank">
+           <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="white"><path d="M0 0h24v24H0z" fill="none"/><path d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"/></svg>
+           Launch App
+        </a>
+    </div>
+    
 </body>
 </html>
