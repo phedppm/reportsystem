@@ -23,7 +23,7 @@
 <body class="bg-gray-100 min-h-screen font-sans">
 
     <script>
-        // PASTE YOUR GOOGLE CLOUD FUNCTION URL HERE
+        // Your Google Cloud Function URL
         const API_URL = "https://phedkyc-1017714579717.us-central1.run.app"; 
     </script>
     <div id="toast" class="fixed top-5 right-5 hidden bg-blue-600 text-white px-6 py-3 rounded shadow-lg z-50 transition-opacity duration-300"></div>
@@ -129,6 +129,24 @@
                         <input type="email" id="f-email" class="w-full p-2 border rounded focus:border-blue-500">
                     </div>
 
+                    <div>
+                        <label class="block text-gray-700 text-sm font-bold mb-1">Building Type</label>
+                        <select id="f-buildingType" class="w-full p-2 border rounded focus:border-blue-500">
+                            <option value="">Select Type</option>
+                            <option value="Single Room">Single Room</option>
+                            <option value="Multiple Rooms">Multiple Rooms</option>
+                            <option value="Flats Bungalo">Flats Bungalo</option>
+                            <option value="Duplex">Duplex</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-gray-700 text-sm font-bold mb-1">Number of Separation Needed</label>
+                        <select id="f-needSeparation" class="w-full p-2 border rounded focus:border-blue-500">
+                            <option value="">Select Count</option>
+                            </select>
+                    </div>
+
                     <div class="col-span-1 md:col-span-2 grid grid-cols-2 gap-4 bg-gray-50 p-3 rounded">
                         <div>
                             <label class="block text-gray-600 text-xs font-bold">DTR Latitude</label>
@@ -166,6 +184,17 @@
 
     <script>
         let currentUser = "";
+
+        // Immediately Populate "Need Separation" Dropdown (1 to 30)
+        (function populateDropdowns() {
+            const select = document.getElementById('f-needSeparation');
+            for (let i = 1; i <= 30; i++) {
+                const option = document.createElement('option');
+                option.value = i;
+                option.innerText = i;
+                select.appendChild(option);
+            }
+        })();
 
         // ================= HELPER FUNCTIONS =================
         function showToast(msg, type = 'success') {
@@ -278,6 +307,10 @@
                     document.getElementById('f-custLat').value = data.custLat || "";
                     document.getElementById('f-custLong').value = data.custLong || "";
 
+                    // Reset New Fields on new search
+                    document.getElementById('f-buildingType').value = "";
+                    document.getElementById('f-needSeparation').value = "";
+
                     // Badge
                     const badge = document.getElementById('visited-badge');
                     if(data.isVisited) badge.classList.remove('hidden');
@@ -317,6 +350,9 @@
                 dtrLong: document.getElementById('f-dtrLong').value,
                 custLat: document.getElementById('f-custLat').value,
                 custLong: document.getElementById('f-custLong').value,
+                // New Fields
+                buildingType: document.getElementById('f-buildingType').value,
+                needSeparation: document.getElementById('f-needSeparation').value,
                 officer: currentUser
             };
 
