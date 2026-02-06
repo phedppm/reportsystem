@@ -1,78 +1,411 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="utf-8">
-    <title>PPM Monitoring System</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    
-    <link rel="icon" type="image/png" href="favicon.png">
-
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500&display=swap" rel="stylesheet">
-
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PHED KYC & Data Manager</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
-        html, body {
-            margin: 0;
-            padding: 0;
-            height: 100vh; /* Use full viewport height */
-            font-family: 'Poppins', sans-serif;
-            background-color: #f0f2f5; /* A very light, clean grey */
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
         }
-
-        /* --- The Top Bar --- */
-        .top-bar {
-            display: flex;
-            align-items: center;
-            padding: 10px 25px; /* Compact padding for a thinner header */
-            background-color: light grey;
-            border-bottom: 1px solid #dee2e6; /* Subtle separator line */
-            box-shadow: 0 1px 3px rgba(0,0,0,0.02);
-            flex-shrink: 0; /* Prevents the header from shrinking */
-            z-index: 10;
-        }
-
-        .logo-img {
-            height: 32px; /* Reduced logo size */
-            width: auto;
-            margin-right: 15px;
-        }
-
-        .system-title {
-            font-size: 1.1rem;
-            font-weight: 500;
-            color: #343a40; /* Darker text for better contrast */
-            margin: 0;
-        }
-
-        /* --- Iframe Container --- */
-        .iframe-container {
-            flex-grow: 1; /* Allows the container to fill all remaining space */
-            position: relative;
-        }
-
-        iframe {
-            width: 100%;
-            height: 100%;
-            border: none;
-            display: block;
-        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .hidden { display: none; }
     </style>
 </head>
-<body>
-    <header class="top-bar">
-        <img src="phed.png" alt="PHED Logo" class="logo-img">
-        <h1 class="system-title">PPM MONITORING SYSTEM</h1>
-    </header>
+<body class="bg-gray-100 min-h-screen font-sans">
 
-    <main class="iframe-container">
-        <iframe
-            src="https://script.google.com/macros/s/AKfycbyOEQB1wi9v0oZqyRCPHCNqhTuvE4C8-QG53cAVIuuRmbsXMoREPDWqiNT8h37JyUk/exec"
-            allow="geolocation">
-        </iframe>
-    </main>
+    <script>
+        // PASTE YOUR GOOGLE CLOUD FUNCTION URL HERE
+        const API_URL = "https://phedkyc-1017714579717.us-central1.run.app"; 
+    </script>
+    <div id="toast" class="fixed top-5 right-5 hidden bg-blue-600 text-white px-6 py-3 rounded shadow-lg z-50 transition-opacity duration-300"></div>
+
+    <div id="login-screen" class="flex flex-col items-center justify-center min-h-screen">
+        <div class="bg-white p-8 rounded shadow-md w-full max-w-sm">
+            <h2 class="text-2xl font-bold mb-6 text-center text-blue-800">PHED KYC Portal</h2>
+            <div class="mb-4">
+                <label class="block text-gray-700 text-sm font-bold mb-2">Email</label>
+                <input type="email" id="login-email" class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter email">
+            </div>
+            <div class="mb-6">
+                <label class="block text-gray-700 text-sm font-bold mb-2">PIN</label>
+                <input type="password" id="login-pin" class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter PIN">
+            </div>
+            <button onclick="handleLogin()" id="login-btn" class="w-full bg-blue-600 text-white p-2 rounded hover:bg-blue-700 font-bold transition">
+                Login
+            </button>
+            <div id="login-loader" class="hidden text-center mt-4"><div class="loader"></div></div>
+        </div>
+    </div>
+
+    <div id="dashboard" class="hidden container mx-auto p-4">
+        
+        <div class="flex justify-between items-center bg-white p-4 rounded shadow mb-6">
+            <div>
+                <h1 class="text-xl font-bold text-gray-800">Welcome, <span id="user-name" class="text-blue-600">User</span></h1>
+            </div>
+            <button onclick="logout()" class="text-red-500 hover:text-red-700 font-bold text-sm">Logout</button>
+        </div>
+
+        <div id="admin-module" class="hidden bg-yellow-50 border border-yellow-200 p-6 rounded shadow mb-6">
+            <h3 class="text-lg font-bold text-yellow-800 mb-2">📂 Source Database Update (Admin Only)</h3>
+            <p class="text-sm text-gray-600 mb-4">Upload an Excel file to update or append customer records in the Source Database.</p>
+            
+            <div class="flex items-center gap-4">
+                <input type="file" id="excel-file" accept=".xlsx, .xls" class="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-yellow-100 file:text-yellow-700 hover:file:bg-yellow-200"/>
+                <button onclick="processExcelUpload()" id="upload-btn" class="bg-yellow-600 text-white px-4 py-2 rounded hover:bg-yellow-700 whitespace-nowrap">Upload & Process</button>
+            </div>
+            <div id="upload-loader" class="hidden mt-2 text-yellow-800 font-semibold text-sm">Processing file... please wait...</div>
+        </div>
+
+        <div class="bg-white p-6 rounded shadow mb-6">
+            <h3 class="text-lg font-bold text-gray-700 mb-4">🔍 Search Customer / DTR</h3>
+            <div class="flex gap-2">
+                <input type="text" id="search-query" class="flex-1 p-3 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter Account Number, Meter No, or DTR ID">
+                <button onclick="handleSearch()" id="search-btn" class="bg-blue-600 text-white px-6 py-3 rounded hover:bg-blue-700 font-bold">Search</button>
+            </div>
+            <div id="search-loader" class="hidden mt-4 text-center"><div class="loader"></div> <span class="text-gray-500 ml-2">Searching database...</span></div>
+        </div>
+
+        <div id="result-section" class="hidden bg-white p-6 rounded shadow">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold text-gray-800">Customer KYC Form</h3>
+                <span id="visited-badge" class="hidden bg-green-100 text-green-800 text-xs font-semibold px-2.5 py-0.5 rounded">Previously Visited</span>
+            </div>
+
+            <form id="kyc-form" onsubmit="handleSubmit(event)">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-gray-600 text-sm font-bold mb-1">Region</label>
+                        <input type="text" id="f-region" class="w-full p-2 bg-gray-100 border rounded" readonly>
+                    </div>
+                    <div>
+                        <label class="block text-gray-600 text-sm font-bold mb-1">Feeder 33KV</label>
+                        <input type="text" id="f-feeder33" class="w-full p-2 bg-gray-100 border rounded" readonly>
+                    </div>
+                    <div>
+                        <label class="block text-gray-600 text-sm font-bold mb-1">Feeder 11KV</label>
+                        <input type="text" id="f-feeder11" class="w-full p-2 bg-gray-100 border rounded" readonly>
+                    </div>
+                    <div>
+                        <label class="block text-gray-600 text-sm font-bold mb-1">DTR Name</label>
+                        <input type="text" id="f-dtrName" class="w-full p-2 bg-gray-100 border rounded" readonly>
+                    </div>
+                    <div>
+                        <label class="block text-gray-600 text-sm font-bold mb-1">DTR ID</label>
+                        <input type="text" id="f-dtrId" class="w-full p-2 bg-gray-100 border rounded" readonly>
+                    </div>
+                    <div>
+                        <label class="block text-gray-600 text-sm font-bold mb-1">Account Number / Meter</label>
+                        <input type="text" id="f-accountNo" class="w-full p-2 bg-gray-100 border rounded" readonly>
+                    </div>
+                    
+                    <div class="col-span-1 md:col-span-2 border-t mt-2 pt-4">
+                        <p class="text-sm font-bold text-blue-600 mb-2">Update Information</p>
+                    </div>
+
+                    <div>
+                        <label class="block text-gray-700 text-sm font-bold mb-1">Customer Name</label>
+                        <input type="text" id="f-custName" class="w-full p-2 border rounded focus:border-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 text-sm font-bold mb-1">Address</label>
+                        <input type="text" id="f-address" class="w-full p-2 border rounded focus:border-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 text-sm font-bold mb-1">Phone Number</label>
+                        <input type="text" id="f-phone" class="w-full p-2 border rounded focus:border-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 text-sm font-bold mb-1">Email</label>
+                        <input type="email" id="f-email" class="w-full p-2 border rounded focus:border-blue-500">
+                    </div>
+
+                    <div class="col-span-1 md:col-span-2 grid grid-cols-2 gap-4 bg-gray-50 p-3 rounded">
+                        <div>
+                            <label class="block text-gray-600 text-xs font-bold">DTR Latitude</label>
+                            <input type="text" id="f-dtrLat" class="w-full p-1 text-sm border rounded">
+                        </div>
+                        <div>
+                            <label class="block text-gray-600 text-xs font-bold">DTR Longitude</label>
+                            <input type="text" id="f-dtrLong" class="w-full p-1 text-sm border rounded">
+                        </div>
+                        <div class="col-span-2 text-right">
+                             <button type="button" onclick="getGeo('dtr')" class="text-xs bg-gray-600 text-white px-2 py-1 rounded">Get DTR Coords</button>
+                        </div>
+
+                        <div>
+                            <label class="block text-gray-600 text-xs font-bold">Cust Latitude</label>
+                            <input type="text" id="f-custLat" class="w-full p-1 text-sm border rounded">
+                        </div>
+                        <div>
+                            <label class="block text-gray-600 text-xs font-bold">Cust Longitude</label>
+                            <input type="text" id="f-custLong" class="w-full p-1 text-sm border rounded">
+                        </div>
+                        <div class="col-span-2 text-right">
+                             <button type="button" onclick="getGeo('cust')" class="text-xs bg-green-600 text-white px-2 py-1 rounded">Get My Coords</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-6">
+                    <button type="submit" id="submit-btn" class="w-full bg-blue-600 text-white p-3 rounded font-bold hover:bg-blue-700 transition">Submit Report</button>
+                    <div id="submit-loader" class="hidden text-center mt-2"><div class="loader"></div></div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        let currentUser = "";
+
+        // ================= HELPER FUNCTIONS =================
+        function showToast(msg, type = 'success') {
+            const toast = document.getElementById('toast');
+            toast.innerText = msg;
+            toast.classList.remove('hidden', 'bg-red-600', 'bg-blue-600');
+            toast.classList.add(type === 'error' ? 'bg-red-600' : 'bg-blue-600');
+            toast.style.display = 'block';
+            setTimeout(() => { toast.style.display = 'none'; }, 3000);
+        }
+
+        function getGeo(target) {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition((pos) => {
+                    const lat = pos.coords.latitude;
+                    const long = pos.coords.longitude;
+                    if(target === 'dtr') {
+                        document.getElementById('f-dtrLat').value = lat;
+                        document.getElementById('f-dtrLong').value = long;
+                    } else {
+                        document.getElementById('f-custLat').value = lat;
+                        document.getElementById('f-custLong').value = long;
+                    }
+                    showToast("Coordinates Captured");
+                }, () => showToast("Error getting location", "error"));
+            } else {
+                showToast("Geolocation not supported", "error");
+            }
+        }
+
+        // ================= AUTHENTICATION =================
+        async function handleLogin() {
+            const email = document.getElementById('login-email').value;
+            const pin = document.getElementById('login-pin').value;
+            const loader = document.getElementById('login-loader');
+            const btn = document.getElementById('login-btn');
+
+            if(!email || !pin) return showToast("Enter Email and PIN", "error");
+
+            loader.classList.remove('hidden');
+            btn.classList.add('hidden');
+
+            try {
+                const res = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ action: 'login', email, pin })
+                });
+                const data = await res.json();
+
+                if(data.success) {
+                    currentUser = data.userName;
+                    document.getElementById('user-name').innerText = currentUser;
+                    document.getElementById('login-screen').classList.add('hidden');
+                    document.getElementById('dashboard').classList.remove('hidden');
+                    
+                    // CHECK FOR ADMIN RIGHTS
+                    if(data.canUpdateSource) {
+                        document.getElementById('admin-module').classList.remove('hidden');
+                    }
+                } else {
+                    showToast(data.message || "Login Failed", "error");
+                }
+            } catch (e) {
+                showToast("Connection Error", "error");
+            } finally {
+                loader.classList.add('hidden');
+                btn.classList.remove('hidden');
+            }
+        }
+
+        function logout() {
+            location.reload();
+        }
+
+        // ================= SEARCH LOGIC =================
+        async function handleSearch() {
+            const query = document.getElementById('search-query').value;
+            if(!query) return showToast("Enter a query", "error");
+
+            document.getElementById('search-loader').classList.remove('hidden');
+            document.getElementById('result-section').classList.add('hidden');
+
+            try {
+                const res = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ action: 'search', query })
+                });
+                const data = await res.json();
+
+                if(data.found) {
+                    document.getElementById('result-section').classList.remove('hidden');
+                    
+                    // Fill Fields
+                    document.getElementById('f-region').value = data.region || "";
+                    document.getElementById('f-feeder33').value = data.feeder33 || "";
+                    document.getElementById('f-feeder11').value = data.feeder11 || "";
+                    document.getElementById('f-dtrName').value = data.dtrName || "";
+                    document.getElementById('f-dtrId').value = data.dtrId || "";
+                    document.getElementById('f-custName').value = data.custName || "";
+                    document.getElementById('f-accountNo').value = data.accountNo || "";
+                    document.getElementById('f-address').value = data.address || "";
+                    
+                    // Visited Data
+                    document.getElementById('f-phone').value = data.custPhone || "";
+                    document.getElementById('f-email').value = data.custEmail || "";
+                    document.getElementById('f-dtrLat').value = data.dtrLat || "";
+                    document.getElementById('f-dtrLong').value = data.dtrLong || "";
+                    document.getElementById('f-custLat').value = data.custLat || "";
+                    document.getElementById('f-custLong').value = data.custLong || "";
+
+                    // Badge
+                    const badge = document.getElementById('visited-badge');
+                    if(data.isVisited) badge.classList.remove('hidden');
+                    else badge.classList.add('hidden');
+
+                } else {
+                    showToast("Record Not Found", "error");
+                }
+            } catch (e) {
+                showToast("Search Error", "error");
+            } finally {
+                document.getElementById('search-loader').classList.add('hidden');
+            }
+        }
+
+        // ================= SUBMIT LOGIC =================
+        async function handleSubmit(e) {
+            e.preventDefault();
+            const loader = document.getElementById('submit-loader');
+            const btn = document.getElementById('submit-btn');
+
+            loader.classList.remove('hidden');
+            btn.classList.add('hidden');
+
+            const formData = {
+                region: document.getElementById('f-region').value,
+                feeder33: document.getElementById('f-feeder33').value,
+                feeder11: document.getElementById('f-feeder11').value,
+                dtrName: document.getElementById('f-dtrName').value,
+                dtrId: document.getElementById('f-dtrId').value,
+                custName: document.getElementById('f-custName').value,
+                accountNo: document.getElementById('f-accountNo').value,
+                address: document.getElementById('f-address').value,
+                custPhone: document.getElementById('f-phone').value,
+                custEmail: document.getElementById('f-email').value,
+                dtrLat: document.getElementById('f-dtrLat').value,
+                dtrLong: document.getElementById('f-dtrLong').value,
+                custLat: document.getElementById('f-custLat').value,
+                custLong: document.getElementById('f-custLong').value,
+                officer: currentUser
+            };
+
+            try {
+                const res = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ action: 'submit', formData })
+                });
+                const result = await res.json();
+                showToast(result.message);
+                if(result.status === 'success') {
+                     document.getElementById('result-section').classList.add('hidden');
+                     document.getElementById('search-query').value = "";
+                }
+            } catch(e) {
+                showToast("Submission Failed", "error");
+            } finally {
+                loader.classList.add('hidden');
+                btn.classList.remove('hidden');
+            }
+        }
+
+        // ================= EXCEL UPLOAD LOGIC =================
+        function processExcelUpload() {
+            const fileInput = document.getElementById('excel-file');
+            const file = fileInput.files[0];
+            const loader = document.getElementById('upload-loader');
+            const btn = document.getElementById('upload-btn');
+
+            if (!file) return showToast("Please select a file first", "error");
+
+            loader.classList.remove('hidden');
+            btn.classList.add('hidden');
+
+            const reader = new FileReader();
+
+            reader.onload = function(e) {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    
+                    // Assuming data is in the first sheet
+                    const firstSheetName = workbook.SheetNames[0];
+                    const worksheet = workbook.Sheets[firstSheetName];
+                    
+                    // Convert to JSON
+                    const jsonData = XLSX.utils.sheet_to_json(worksheet);
+
+                    if(jsonData.length === 0) throw new Error("Empty Sheet");
+
+                    // Send to Backend
+                    sendExcelData(jsonData);
+
+                } catch (err) {
+                    console.error(err);
+                    showToast("Error reading Excel file", "error");
+                    loader.classList.add('hidden');
+                    btn.classList.remove('hidden');
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        async function sendExcelData(rows) {
+            try {
+                const res = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ 
+                        action: 'updateSource', 
+                        rows: rows 
+                    })
+                });
+                const result = await res.json();
+                
+                if(result.success) {
+                    showToast(result.message);
+                    document.getElementById('excel-file').value = ""; // clear input
+                } else {
+                    showToast(result.error || "Update Failed", "error");
+                }
+            } catch(e) {
+                showToast("Server Communication Error", "error");
+            } finally {
+                document.getElementById('upload-loader').classList.add('hidden');
+                document.getElementById('upload-btn').classList.remove('hidden');
+            }
+        }
+    </script>
 </body>
 </html>
